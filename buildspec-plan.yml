@@ -3,30 +3,33 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.9
+      python: 3.8
     commands:
       # Install Terraform
-      - sudo yum install -y yum-utils
-      - sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-      - sudo yum install -y terraform
+      - curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+      - sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+      - sudo apt-get update && sudo apt-get install terraform -y
 
   pre_build:
     commands:
-      # Print versions for verification
+      # Print Terraform version
       - terraform --version
-      - aws --version
 
   build:
     commands:
-      # Initialize Terraform (if not already initialized)
-      - terraform init -input=false
+      # Initialize Terraform
+      - terraform init
 
-      # Perform Terraform validate
+      # Validate Terraform configuration
       - terraform validate
 
-      # Perform Terraform plan
-      - terraform plan -out=tfplan -input=false
+      # Create Terraform plan
+      - terraform plan -out=tfplan
+
+# Add post_build phases if needed (e.g., deployment)
 
 artifacts:
   files:
-    - '**/*'
+    - tfplan  # Include Terraform plan file as artifact
+
+# Add additional configuration as required
